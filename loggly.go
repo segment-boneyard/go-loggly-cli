@@ -23,6 +23,7 @@ const usage = `
     --from <time>      starting time [-24h]
     --to <time>        ending time [now]
     --path <str>       output json fields in <path>
+    --json             output json array of events
     --count            output total event count
 `
 
@@ -32,6 +33,7 @@ const usage = `
 
 var flags = flag.NewFlagSet("loggly", flag.ExitOnError)
 var count = flags.Bool("count", false, "")
+var json = flags.Bool("json", false, "")
 var account = flags.String("account", "", "")
 var user = flags.String("user", "", "")
 var pass = flags.String("pass", "", "")
@@ -105,7 +107,14 @@ func main() {
 		os.Exit(0)
 	}
 
-	outputJson(res.Events)
+	// --json
+	if *json {
+		outputJson(res.Events)
+		os.Exit(0)
+	}
+
+	// formatted
+	output(res.Events)
 }
 
 //
@@ -147,13 +156,16 @@ func outputPath(events []interface{}, path string) {
 	}
 }
 
-// func output(event interface{}) {
-// 	msg := event.(map[string]interface{})["logmsg"].(string)
-// 	obj, err := NewJson([]byte(msg))
-// 	check(err)
+func output(events []interface{}) {
+	for _, event := range events {
+		msg := event.(map[string]interface{})["logmsg"].(string)
+		obj, err := NewJson([]byte(msg))
+		check(err)
 
-// 	fmt.Println()
-// 	for k, v := range obj.MustMap() {
-// 		fmt.Printf("  \033[36m%14s\033[0m \033[90m:\033[0m %s\n", k, v)
-// 	}
-// }
+		fmt.Println()
+		for k, v := range obj.MustMap() {
+			fmt.Printf("  \033[36m%14s\033[0m \033[90m:\033[0m %s\n", k, v)
+		}
+	}
+	fmt.Println()
+}
