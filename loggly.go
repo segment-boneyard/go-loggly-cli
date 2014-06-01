@@ -156,6 +156,10 @@ func outputPath(events []interface{}, path string) {
 	}
 }
 
+//
+// Formatted output.
+//
+
 func output(events []interface{}) {
 	for _, event := range events {
 		msg := event.(map[string]interface{})["logmsg"].(string)
