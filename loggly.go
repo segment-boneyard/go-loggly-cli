@@ -113,10 +113,20 @@ func main() {
 //
 
 func outputJson(events []interface{}) {
-	for _, event := range events {
+	fmt.Println("[")
+
+	l := len(events)
+
+	for i, event := range events {
 		msg := event.(map[string]interface{})["logmsg"].(string)
-		fmt.Println(msg)
+		if i < l-1 {
+			fmt.Printf("  %s,\n", msg)
+		} else {
+			fmt.Printf("  %s\n", msg)
+		}
 	}
+
+	fmt.Println("]")
 }
 
 //
