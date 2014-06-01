@@ -1,8 +1,7 @@
 package main
 
 import "github.com/segmentio/go-loggly-search"
-
-// import . "github.com/bitly/go-simplejson"
+import . "github.com/bitly/go-simplejson"
 import "strings"
 import "flag"
 import "fmt"
@@ -23,6 +22,7 @@ const usage = `
     --size <count>     response event count [100]
     --from <time>      starting time [-24h]
     --to <time>        ending time [now]
+    --path <str>       output json fields in <path>
     --count            output total event count
 `
 
@@ -37,6 +37,7 @@ var user = flags.String("user", "", "")
 var pass = flags.String("pass", "", "")
 var size = flags.Int("size", 100, "")
 var from = flags.String("from", "-24h", "")
+var path = flags.String("path", "", "")
 var to = flags.String("to", "now", "")
 
 //
@@ -87,6 +88,7 @@ func main() {
 
 	c := search.New(*account, *user, *pass)
 
+	// --count
 	if *count {
 		res, err := c.Query(query).Size(1).From(*from).To(*to).Fetch()
 		check(err)
@@ -96,6 +98,12 @@ func main() {
 
 	res, err := c.Query(query).Size(*size).From(*from).To(*to).Fetch()
 	check(err)
+
+	// --path
+	if *path != "" {
+		outputPath(res.Events, *path)
+		os.Exit(0)
+	}
 
 	outputJson(res.Events)
 }
@@ -108,6 +116,20 @@ func outputJson(events []interface{}) {
 	for _, event := range events {
 		msg := event.(map[string]interface{})["logmsg"].(string)
 		fmt.Println(msg)
+	}
+}
+
+func outputPath(events []interface{}, path string) {
+	for _, event := range events {
+		msg := event.(map[string]interface{})["logmsg"].(string)
+
+		obj, err := NewJson([]byte(msg))
+		check(err)
+
+		b, err := obj.GetPath(path).Encode()
+		check(err)
+
+		fmt.Println(string(b))
 	}
 }
 
