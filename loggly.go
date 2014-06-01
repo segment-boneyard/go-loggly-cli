@@ -167,9 +167,9 @@ func output(events []interface{}) {
 		c := colors[level]
 
 		obj.Del("hostname")
-		// obj.Del("level")
-		// obj.Del("timestamp")
-		// obj.Del("type")
+		obj.Del("level")
+		obj.Del("timestamp")
+		obj.Del("type")
 
 		json, err := obj.EncodePretty()
 		check(err)
