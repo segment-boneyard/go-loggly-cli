@@ -1,9 +1,11 @@
 package main
 
 import "github.com/segmentio/go-loggly-search"
-import . "github.com/bitly/go-simplejson"
+import . "github.com/segmentio/go-simplejson"
+import "github.com/jehiah/go-strftime"
 import "strings"
 import "flag"
+import "time"
 import "fmt"
 import "os"
 
@@ -39,6 +41,20 @@ var pass = flags.String("pass", "", "")
 var size = flags.Int("size", 100, "")
 var from = flags.String("from", "-24h", "")
 var to = flags.String("to", "now", "")
+
+//
+// Colors.
+//
+
+var colors = map[string]string{
+	"debug":     "90",
+	"info":      "90",
+	"notice":    "33",
+	"warning":   "33",
+	"critical":  "31",
+	"alert":     "31;1",
+	"emergency": "31;1",
+}
 
 //
 // Print usage and exit.
@@ -130,6 +146,10 @@ func outputJson(events []interface{}) {
 	fmt.Println("]")
 }
 
+func timeFromUnix(ms int64) time.Time {
+	return time.Unix(0, ms*int64(time.Millisecond))
+}
+
 //
 // Formatted output.
 //
@@ -140,10 +160,25 @@ func output(events []interface{}) {
 		obj, err := NewJson([]byte(msg))
 		check(err)
 
-		fmt.Println()
-		for k, v := range obj.MustMap() {
-			fmt.Printf("  \033[36m%14s\033[0m \033[90m:\033[0m %s\n", k, v)
-		}
+		host := obj.Get("hostname").MustString()
+		level := obj.Get("level").MustString()
+		ts := timeFromUnix(obj.Get("timestamp").MustInt64())
+		t := obj.Get("type").MustString()
+		c := colors[level]
+
+		obj.Del("hostname")
+		// obj.Del("level")
+		// obj.Del("timestamp")
+		// obj.Del("type")
+
+		json, err := obj.EncodePretty()
+		check(err)
+
+		date := strftime.Format("%m-%d %I:%M:%S %p", ts)
+		level = strings.ToUpper(level)
+		fmt.Printf("\n%s \033["+c+"m%s\033[0m - \033[36m%s \033[90m(%s)\033[0m\n", date, level, t, host)
+		fmt.Printf("\n%s\n", string(json))
 	}
+
 	fmt.Println()
 }
