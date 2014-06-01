@@ -5,6 +5,13 @@
 
 ## Installation
 
+  Quick install via go-get:
+
+```
+$ go get github.com/segmentio/go-loggly-cli
+# go-loggly-cli --version
+```
+
 ## Usage
 
 ```
