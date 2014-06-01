@@ -23,6 +23,7 @@ const usage = `
     --size <count>     response event count [100]
     --from <time>      starting time [-24h]
     --to <time>        ending time [now]
+    --count            output total event count
 `
 
 //
@@ -30,12 +31,13 @@ const usage = `
 //
 
 var flags = flag.NewFlagSet("loggly", flag.ExitOnError)
-var account = flags.String("account", "", "account name")
-var user = flags.String("user", "", "account username")
-var pass = flags.String("pass", "", "account password")
-var size = flags.Int("size", 100, "response event count")
-var from = flags.String("from", "-24h", "starting time")
-var to = flags.String("to", "now", "ending time")
+var count = flags.Bool("count", false, "")
+var account = flags.String("account", "", "")
+var user = flags.String("user", "", "")
+var pass = flags.String("pass", "", "")
+var size = flags.Int("size", 100, "")
+var from = flags.String("from", "-24h", "")
+var to = flags.String("to", "now", "")
 
 //
 // Print usage and exit.
@@ -84,6 +86,13 @@ func main() {
 	query := strings.Join(args, " ")
 
 	c := search.New(*account, *user, *pass)
+
+	if *count {
+		res, err := c.Query(query).Size(1).From(*from).To(*to).Fetch()
+		check(err)
+		fmt.Println(res.Total)
+		os.Exit(0)
+	}
 
 	res, err := c.Query(query).Size(*size).From(*from).To(*to).Fetch()
 	check(err)
