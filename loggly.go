@@ -119,6 +119,10 @@ func outputJson(events []interface{}) {
 	}
 }
 
+//
+// Output path as json.
+//
+
 func outputPath(events []interface{}, path string) {
 	for _, event := range events {
 		msg := event.(map[string]interface{})["logmsg"].(string)
