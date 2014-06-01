@@ -48,7 +48,7 @@ var to = flags.String("to", "now", "")
 
 var colors = map[string]string{
 	"debug":     "90",
-	"info":      "90",
+	"info":      "32",
 	"notice":    "33",
 	"warning":   "33",
 	"critical":  "31",
@@ -176,7 +176,7 @@ func output(events []interface{}) {
 
 		date := strftime.Format("%m-%d %I:%M:%S %p", ts)
 		level = strings.ToUpper(level)
-		fmt.Printf("\n%s \033["+c+"m%s\033[0m - \033[36m%s \033[90m(%s)\033[0m\n", date, level, t, host)
+		fmt.Printf("\n\033["+c+"m%s: %s \033[90m(%s)\033[0m %s\n", level, t, host, date)
 		fmt.Printf("\n%s\n", string(json))
 	}
 
