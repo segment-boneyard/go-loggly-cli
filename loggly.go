@@ -1,8 +1,9 @@
 package main
 
-// import "github.com/segmentio/go-loggly-search"
+import "github.com/segmentio/go-loggly-search"
+
 // import . "github.com/bitly/go-simplejson"
-// import "strings"
+import "strings"
 import "flag"
 import "fmt"
 import "os"
@@ -12,7 +13,7 @@ import "os"
 //
 
 const usage = `
-  Usage: loggly [options] [query]
+  Usage: loggly [options] [query...]
 
   Options:
 
@@ -32,7 +33,7 @@ var flags = flag.NewFlagSet("loggly", flag.ExitOnError)
 var account = flags.String("account", "", "account name")
 var user = flags.String("user", "", "account username")
 var pass = flags.String("pass", "", "account password")
-var size = flags.Int64("size", 100, "response event count")
+var size = flags.Int("size", 100, "response event count")
 var from = flags.String("from", "-24h", "starting time")
 var to = flags.String("to", "now", "ending time")
 
@@ -45,10 +46,25 @@ func printUsage() {
 	os.Exit(0)
 }
 
+//
+// Assert with msg.
+//
+
 func assert(ok bool, msg string) {
 	if !ok {
 		fmt.Printf("\n  Error: %s\n\n", msg)
-		os.Exit(10)
+		os.Exit(1)
+	}
+}
+
+//
+// Check error.
+//
+
+func check(err error) {
+	if err != nil {
+		fmt.Printf("\n  Error: %s\n\n", err)
+		os.Exit(1)
 	}
 }
 
@@ -64,4 +80,35 @@ func main() {
 	assert(*user != "", "--user required")
 	assert(*pass != "", "--pass required")
 
+	args := flags.Args()
+	query := strings.Join(args, " ")
+
+	c := search.New(*account, *user, *pass)
+
+	res, err := c.Query(query).Size(*size).From(*from).To(*to).Fetch()
+	check(err)
+
+	outputJson(res.Events)
 }
+
+//
+// Output as json.
+//
+
+func outputJson(events []interface{}) {
+	for _, event := range events {
+		msg := event.(map[string]interface{})["logmsg"].(string)
+		fmt.Println(msg)
+	}
+}
+
+// func output(event interface{}) {
+// 	msg := event.(map[string]interface{})["logmsg"].(string)
+// 	obj, err := NewJson([]byte(msg))
+// 	check(err)
+
+// 	fmt.Println()
+// 	for k, v := range obj.MustMap() {
+// 		fmt.Printf("  \033[36m%14s\033[0m \033[90m:\033[0m %s\n", k, v)
+// 	}
+// }
