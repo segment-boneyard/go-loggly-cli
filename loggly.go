@@ -1,13 +1,19 @@
 package main
 
 import "github.com/segmentio/go-loggly-search"
-import . "github.com/segmentio/go-simplejson"
+import j "github.com/segmentio/go-simplejson"
 import "github.com/jehiah/go-strftime"
 import "strings"
 import "flag"
 import "time"
 import "fmt"
 import "os"
+
+//
+// Version.
+//
+
+const Version = "0.0.1"
 
 //
 // Usage information.
@@ -26,6 +32,7 @@ const usage = `
     --to <time>        ending time [now]
     --json             output json array of events
     --count            output total event count
+    --version          output version information
 `
 
 //
@@ -35,6 +42,7 @@ const usage = `
 var flags = flag.NewFlagSet("loggly", flag.ExitOnError)
 var count = flags.Bool("count", false, "")
 var json = flags.Bool("json", false, "")
+var version = flags.Bool("version", false, "")
 var account = flags.String("account", "", "")
 var user = flags.String("user", "", "")
 var pass = flags.String("pass", "", "")
@@ -95,13 +103,20 @@ func main() {
 	flags.Usage = printUsage
 	flags.Parse(os.Args[1:])
 
+	// --version
+	if *version {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+
 	assert(*account != "", "--account required")
 	assert(*user != "", "--user required")
 	assert(*pass != "", "--pass required")
 
+	// setup
+
 	args := flags.Args()
 	query := strings.Join(args, " ")
-
 	c := search.New(*account, *user, *pass)
 
 	// --count
@@ -146,10 +161,6 @@ func outputJson(events []interface{}) {
 	fmt.Println("]")
 }
 
-func timeFromUnix(ms int64) time.Time {
-	return time.Unix(0, ms*int64(time.Millisecond))
-}
-
 //
 // Formatted output.
 //
@@ -157,7 +168,7 @@ func timeFromUnix(ms int64) time.Time {
 func output(events []interface{}) {
 	for _, event := range events {
 		msg := event.(map[string]interface{})["logmsg"].(string)
-		obj, err := NewJson([]byte(msg))
+		obj, err := j.NewJson([]byte(msg))
 		check(err)
 
 		host := obj.Get("hostname").MustString()
@@ -181,4 +192,12 @@ func output(events []interface{}) {
 	}
 
 	fmt.Println()
+}
+
+//
+// Time from ms timestamp.
+//
+
+func timeFromUnix(ms int64) time.Time {
+	return time.Unix(0, ms*int64(time.Millisecond))
 }
