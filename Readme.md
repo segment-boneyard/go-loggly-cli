@@ -9,7 +9,7 @@
 
 ```
 $ go get github.com/segmentio/go-loggly-cli
-# go-loggly-cli --version
+$ go-loggly-cli --version
 ```
 
 ## Usage
