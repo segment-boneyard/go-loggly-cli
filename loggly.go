@@ -33,6 +33,31 @@ const usage = `
     --json             output json array of events
     --count            output total event count
     --version          output version information
+
+  Operators:
+
+    "foo bar" AND baz
+    foo AND bar NOT baz
+    +foo +bar -baz
+    foo OR bar
+    json.responseTime[50 TO 100]
+    json.duration[1000 TO *]
+
+
+  Fields:
+
+    json.level:error
+    json.type:"upload failed"
+    json.hostname:"api-*"
+
+  Grouping:
+
+    foo AND (bar OR baz)
+
+  Regexps:
+
+    /Black(Berry)?/
+
 `
 
 //
