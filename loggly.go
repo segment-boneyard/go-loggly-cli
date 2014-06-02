@@ -43,7 +43,6 @@ const usage = `
     json.responseTime[50 TO 100]
     json.duration[1000 TO *]
 
-
   Fields:
 
     json.level:error
