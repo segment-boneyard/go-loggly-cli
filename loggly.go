@@ -169,7 +169,11 @@ func output(events []interface{}) {
 	for _, event := range events {
 		msg := event.(map[string]interface{})["logmsg"].(string)
 		obj, err := j.NewJson([]byte(msg))
-		check(err)
+
+		if err != nil {
+			fmt.Println(msg)
+			continue
+		}
 
 		host := obj.Get("hostname").MustString()
 		level := obj.Get("level").MustString()
